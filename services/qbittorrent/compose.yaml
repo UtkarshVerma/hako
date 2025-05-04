@@ -6,7 +6,7 @@ services:
     container_name: qbittorrent
     image: docker.io/qbittorrentofficial/qbittorrent-nox:latest
     depends_on:
-      gluetun:
+      wireguard:
         condition: service_healthy
 
     user: $PUID:$PGID
@@ -16,7 +16,7 @@ services:
     cap_drop:
       - ALL
 
-    network_mode: service:gluetun
+    network_mode: service:wireguard
 
     environment:
       TZ: $TZ
@@ -32,20 +32,34 @@ services:
 
     restart: unless-stopped
 
-  gluetun:
-    container_name: gluetun
-    image: docker.io/qmcgaw/gluetun:latest
+  wireguard:
+    container_name: wireguard
+    image: lscr.io/linuxserver/wireguard:latest
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "[ \"$(nslookup $DOMAIN | awk -F': ' 'NR==6 { print $$2 }')\" != \"$(curl --silent https://ifconfig.me)\" ]"
+      interval: 5s
+      timeout: 5s
+      retries: 3
 
-    # TODO: Why must this be run as root?
-    # user: $PUID:$PGID
-    # TODO: Wait for: https://github.com/qdm12/gluetun/discussions/2797
-    # read_only: true
+    # NOTE:
+    # Root access is required for creating networking interfaces and modifying
+    # routing rules. Read-only is not supported since client mode updates
+    # resolvconf, etc.
     security_opt:
       - no-new-privileges
     cap_drop:
       - ALL
     cap_add:
       - NET_ADMIN
+      - NET_RAW
+      - CHOWN
+
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
 
     networks:
       - media
@@ -53,16 +67,6 @@ services:
 
     expose:
       - &port 8080
-
-    environment:
-      PUID: $PUID
-      PGID: $PGID
-      TZ: $TZ
-      VPN_SERVICE_PROVIDER: mullvad
-      VPN_TYPE: wireguard
-      WIREGUARD_PRIVATE_KEY: $WIREGUARD_PRIVATE_KEY
-      WIREGUARD_ADDRESSES: $WIREGUARD_ADDRESSES
-      SERVER_COUNTRIES: $GLUETUN_SERVER_COUNTRIES
 
     labels:
       traefik.enable: true
@@ -72,11 +76,11 @@ services:
       traefik.http.routers.qbittorrent.tls.certresolver: le
       traefik.http.services.qbittorrent.loadbalancer.server.port: *port
 
-    devices:
-      - /dev/net/tun:/dev/net/tun
-
     volumes:
-      - ./state/gluetun:/gluetun:rw
+      - ./state/wireguard:/config:rw
+
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
 
     restart: unless-stopped
 
@@ -84,4 +88,3 @@ networks:
   media:
     name: media
     driver: bridge
-    enable_ipv6: true

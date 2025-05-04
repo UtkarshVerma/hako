@@ -15,3 +15,7 @@ convenience.
 > [!NOTE]
 > For `ddclient`, the config must be specified in
 > `services/ddclient/state/ddclient.conf`.
+>
+> For `wireguard`, put all configs in
+> `services/qbittorent/state/wireguard/wg_confs`. In case of IPv6 errors
+> ensure that `AllowedIPs` only contains `0.0.0.0/0`.
