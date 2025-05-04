@@ -1,0 +1,87 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  qbittorent:
+    container_name: qbittorrent
+    image: docker.io/qbittorrentofficial/qbittorrent-nox:latest
+    depends_on:
+      gluetun:
+        condition: service_healthy
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    network_mode: service:gluetun
+
+    environment:
+      TZ: $TZ
+      QBT_LEGAL_NOTICE: confirm
+      QBT_DOWNLOADS_PATH: /data/torrents
+
+    tmpfs:
+      - /tmp
+
+    volumes:
+      - ./state/qbittorrent:/config/qBittorrent:rw
+      - $DATA_DIR/torrents:/data/torrents:rw
+
+    restart: unless-stopped
+
+  gluetun:
+    container_name: gluetun
+    image: docker.io/qmcgaw/gluetun:latest
+
+    # TODO: Why must this be run as root?
+    # user: $PUID:$PGID
+    # TODO: Wait for: https://github.com/qdm12/gluetun/discussions/2797
+    # read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_ADMIN
+
+    networks:
+      - media
+      - traefik
+
+    expose:
+      - &port 8080
+
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+      VPN_SERVICE_PROVIDER: mullvad
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: $WIREGUARD_PRIVATE_KEY
+      WIREGUARD_ADDRESSES: $WIREGUARD_ADDRESSES
+      SERVER_COUNTRIES: $GLUETUN_SERVER_COUNTRIES
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.qbittorrent.service: qbittorrent
+      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.$DOMAIN`)
+      traefik.http.routers.qbittorrent.entrypoints: websecure
+      traefik.http.routers.qbittorrent.tls.certresolver: le
+      traefik.http.services.qbittorrent.loadbalancer.server.port: *port
+
+    devices:
+      - /dev/net/tun:/dev/net/tun
+
+    volumes:
+      - ./state/gluetun:/gluetun:rw
+
+    restart: unless-stopped
+
+networks:
+  media:
+    name: media
+    driver: bridge
+    enable_ipv6: true

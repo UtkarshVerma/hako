@@ -1,0 +1,31 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  actual:
+    container_name: actual
+    image: docker.io/actualbudget/actual-server:latest-alpine
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - traefik
+
+    expose:
+      - 5006
+
+    volumes:
+      - ./state:/data:rw
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.actual.rule: Host(`actual.$DOMAIN`)
+      traefik.http.routers.actual.entrypoints: websecure
+      traefik.http.routers.actual.tls.certresolver: le
+
+    restart: unless-stopped

@@ -1,0 +1,12 @@
+tls:
+  options:
+    default:
+      # Hardening: Do not allow indexing based on IP address.
+      sniStrict: true
+
+      # soju needs the IRC ALPN.
+      alpnProtocols:
+        - http/1.1
+        - h2
+        - acme-tls/1
+        - irc

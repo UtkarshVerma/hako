@@ -1,0 +1,40 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  ddclient:
+    container_name: ddclient
+    image: lscr.io/linuxserver/ddclient:latest
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - ddclient
+
+    environment:
+      TZ: $TZ
+
+    tmpfs:
+      - /tmp
+      - /run:exec,uid=$PUID,gid=$PGID
+
+    # TODO:
+    # Docker compose configs do not work with read-only containers.
+    # The linuxserver container does not provide a way to pass CLI
+    # args to the container. Configs also have some permission issues etc.
+    # Wait for CLI arg features to be baked in, till then, just have the
+    # secrets in ddclient.conf.
+    volumes:
+      - ./state:/config:rw
+
+    restart: unless-stopped
+
+networks:
+  ddclient:
+    name: ddclient
+    driver: bridge

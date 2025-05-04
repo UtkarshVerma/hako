@@ -1,0 +1,46 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: docker.io/jellyfin/jellyfin
+    hostname: jellyfin # Set server name.
+
+    user: $PUID:$PGID
+    group_add:
+      - $RENDER_GID
+      - $VIDEO_GID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - traefik
+      - media
+
+    expose:
+      - 8096
+
+    environment:
+      TZ: $TZ
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.jellyfin.rule: Host(`jellyfin.$DOMAIN`)
+      traefik.http.routers.jellyfin.entrypoints: websecure
+      traefik.http.routers.jellyfin.tls.certresolver: le
+
+    devices:
+      - /dev/dri/:/dev/dri/
+
+    tmpfs:
+      - /cache
+
+    volumes:
+      - ./state:/config:rw
+      - $DATA_DIR/media:/data/media:rw
+
+    restart: unless-stopped

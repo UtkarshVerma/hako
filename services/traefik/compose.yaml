@@ -1,0 +1,45 @@
+services:
+  traefik:
+    image: docker.io/traefik:v3.3
+    container_name: traefik
+    command:
+      - --providers.docker=true
+      - --providers.file.directory=/config
+      - --providers.file.watch=true
+      - --providers.docker.exposedbydefault=false
+      - --entryPoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      - --certificatesresolvers.le.acme.email=$DOMAIN_ADMIN_EMAIL
+      - --certificatesresolvers.le.acme.storage=/state/acme.json
+
+      # Explicitly specify the network name for containers with multiple networks.
+      - --providers.docker.network=traefik
+
+    user: $PUID:$PGID
+    group_add:
+      - $DOCKER_GID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+
+    networks:
+      - traefik
+
+    ports:
+      - 443:443
+
+    volumes:
+      - ./config:/config:ro
+      - ./state:/state:rw
+      - $DOCKER_SOCKET:/var/run/docker.sock:ro
+
+    restart: unless-stopped
+
+networks:
+  traefik:
+    name: traefik
+    driver: bridge

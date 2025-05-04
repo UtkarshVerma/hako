@@ -1,0 +1,9 @@
+include:
+  - ./services/actual/compose.yaml
+  - ./services/ddclient/compose.yaml
+  - ./services/jellyfin/compose.yaml
+  - ./services/prowlarr/compose.yaml
+  - ./services/qbittorrent/compose.yaml
+  - ./services/soju/compose.yaml
+  - ./services/sonarr/compose.yaml
+  - ./services/traefik/compose.yaml

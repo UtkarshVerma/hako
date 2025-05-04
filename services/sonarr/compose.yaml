@@ -1,0 +1,39 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  sonarr:
+    container_name: sonarr
+    image: lscr.io/linuxserver/sonarr:latest
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - media
+      - traefik
+
+    expose:
+      - 8989
+
+    environment:
+      TZ: $TZ
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.sonarr.rule: Host(`sonarr.$DOMAIN`)
+      traefik.http.routers.sonarr.entrypoints: websecure
+      traefik.http.routers.sonarr.tls.certresolver: le
+
+    tmpfs:
+      - /run:exec,uid=$PUID,gid=$PGID
+
+    volumes:
+      - ./state:/config:rw
+      - $DATA_DIR:/data:rw
+
+    restart: unless-stopped

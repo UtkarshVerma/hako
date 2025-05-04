@@ -1,0 +1,38 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  prowlarr:
+    container_name: prowlarr
+    image: lscr.io/linuxserver/prowlarr:latest
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - media
+      - traefik
+
+    expose:
+      - 9696
+
+    environment:
+      TZ: $TZ
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.prowlarr.rule: Host(`prowlarr.$DOMAIN`)
+      traefik.http.routers.prowlarr.entrypoints: websecure
+      traefik.http.routers.prowlarr.tls.certresolver: le
+
+    tmpfs:
+      - /run:exec,uid=$PUID,gid=$PGID
+
+    volumes:
+      - ./state:/config:rw
+
+    restart: unless-stopped

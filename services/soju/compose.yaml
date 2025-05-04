@@ -1,0 +1,33 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  soju:
+    container_name: soju
+    hostname: soju.$DOMAIN
+    image: codeberg.org/emersion/soju:latest
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - traefik
+
+    expose:
+      - 6667
+
+    volumes:
+      - ./config/soju.config:/soju-config:ro
+      - ./state:/state:rw
+
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.soju.rule: HostSNI(`soju.$DOMAIN`)
+      traefik.tcp.routers.soju.entrypoints: websecure
+      traefik.tcp.routers.soju.tls.certresolver: le
+
+    restart: unless-stopped
