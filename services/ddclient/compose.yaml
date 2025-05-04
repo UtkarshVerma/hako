@@ -18,6 +18,8 @@ services:
 
     environment:
       TZ: $TZ
+      CF_DNS_ZONE: $CF_DNS_ZONE
+      CF_DNS_API_TOKEN: $CF_DNS_API_TOKEN
 
     tmpfs:
       - /tmp
