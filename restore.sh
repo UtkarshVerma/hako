@@ -1,20 +1,16 @@
 #!/bin/sh
 set -eu
 
-BACKUP_DIR="${BACKUP_DIR:-backup}"
+# Check if a backup file argument is provided, otherwise print usage.
+if [ $# -ne 1 ]; then
+    echo "usage: $0 <backup_file.tar.bz2>"
+    exit 1
+fi
 
-for backup in "$BACKUP_DIR"/*.tar.bz2; do
-    service="${backup#"$BACKUP_DIR/"}"
-    service="${service%.tar.bz2}"
-    printf "Restoring %s..." "$service"
-    state_dir="services/$service/state"
-    mkdir -p "$state_dir"
-    if {
-        rm -rf "$state_dir:?"/*
-        tar --directory "$state_dir" -xjf "$backup"
-    }; then
-        echo "done"
-    else
-        echo "failed"
-    fi
-done
+BACKUP_FILE="$1"
+if [ ! -f "$BACKUP_FILE" ]; then
+    echo "error: backup file $BACKUP_FILE not found"
+    exit 1
+fi
+
+exec tar --extract --verbose --bzip2 --file "$BACKUP_FILE"
