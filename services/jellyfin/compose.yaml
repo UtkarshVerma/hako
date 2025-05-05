@@ -37,8 +37,8 @@ services:
       - /dev/dri/:/dev/dri/
 
     tmpfs:
-      - /tmp
-      - /cache
+      - /tmp:noexec
+      - /cache:noexec
 
     volumes:
       - ./state:/config:rw

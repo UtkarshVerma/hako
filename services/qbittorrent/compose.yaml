@@ -24,7 +24,7 @@ services:
       QBT_DOWNLOADS_PATH: /data/torrents
 
     tmpfs:
-      - /tmp
+      - /tmp:noexec
 
     volumes:
       - ./state/qbittorrent:/config/qBittorrent:rw

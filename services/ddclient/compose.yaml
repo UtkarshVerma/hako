@@ -22,7 +22,7 @@ services:
       CF_DNS_API_TOKEN: $CF_DNS_API_TOKEN
 
     tmpfs:
-      - /tmp
+      - /tmp:noexec
       - /run:exec,uid=$PUID,gid=$PGID
 
     # TODO:
