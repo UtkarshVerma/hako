@@ -3,6 +3,7 @@ include:
   - ./services/ddclient/compose.yaml
   - ./services/jellyfin/compose.yaml
   - ./services/miniflux/compose.yaml
+  - ./services/opodsync/compose.yaml
   - ./services/prowlarr/compose.yaml
   - ./services/qbittorrent/compose.yaml
   - ./services/recyclarr/compose.yaml

@@ -1,0 +1,34 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  opodsync:
+    container_name: opodsync
+    image: docker.io/ganeshlab/opodsync
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - traefik
+
+    expose:
+      - 8080
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.opodsync.rule: Host(`opodsync.$DOMAIN`)
+      traefik.http.routers.opodsync.entrypoints: websecure
+      traefik.http.routers.opodsync.tls.certresolver: le
+
+    tmpfs:
+      - /tmp:noexec
+
+    volumes:
+      - ./state:/var/www/server/data:rw
+
+    restart: unless-stopped
