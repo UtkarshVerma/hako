@@ -8,3 +8,4 @@ include:
   - ./services/soju/compose.yaml
   - ./services/sonarr/compose.yaml
   - ./services/traefik/compose.yaml
+  - ./services/uptime-kuma/compose.yaml

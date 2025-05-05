@@ -1,0 +1,46 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  uptime-kuma:
+    image: docker.io/louislam/uptime-kuma:1
+    container_name: uptime-kuma
+
+    # v1 does not support rootless so wait for v2.
+    # user: $PUID:$PGID
+    # group_add:
+    #   - $DOCKER_GID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+
+    networks:
+      - traefik
+
+    expose:
+      - 3001
+
+    environment:
+      PUID: $PUID
+      PGID: $DOCKER_GID
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.kuma.rule: Host(`kuma.$DOMAIN`)
+      traefik.http.routers.kuma.entrypoints: websecure
+      traefik.http.routers.kuma.tls.certresolver: le
+
+    volumes:
+      - ./state:/app/data:rw
+      - $DOCKER_SOCKET:/var/run/docker.sock:ro
+
+    restart: unless-stopped
+
+volumes:
+  autokuma-data:
