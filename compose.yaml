@@ -4,6 +4,7 @@ include:
   - ./services/jellyfin/compose.yaml
   - ./services/prowlarr/compose.yaml
   - ./services/qbittorrent/compose.yaml
+  - ./services/recyclarr/compose.yaml
   - ./services/soju/compose.yaml
   - ./services/sonarr/compose.yaml
   - ./services/traefik/compose.yaml

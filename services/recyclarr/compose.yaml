@@ -1,0 +1,27 @@
+services:
+  recyclarr:
+    container_name: recyclarr
+    image: ghcr.io/recyclarr/recyclarr:latest
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - media
+
+    environment:
+      TZ: $TZ
+      SONARR_API_KEY: $SONARR_API_KEY
+
+    tmpfs:
+      - /tmp
+
+    volumes:
+      - ./state:/config:rw
+      - ./config/recyclarr.yaml:/config/recyclarr.yaml:ro
+
+    restart: unless-stopped
