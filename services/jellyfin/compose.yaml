@@ -5,7 +5,7 @@ services:
   jellyfin:
     container_name: jellyfin
     image: docker.io/jellyfin/jellyfin
-    hostname: jellyfin # Set server name.
+    hostname: jellyfin  # Set server name.
 
     user: $PUID:$PGID
     group_add:
@@ -37,6 +37,7 @@ services:
       - /dev/dri/:/dev/dri/
 
     tmpfs:
+      - /tmp
       - /cache
 
     volumes:
