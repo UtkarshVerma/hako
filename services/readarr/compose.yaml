@@ -1,0 +1,40 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  readarr:
+    container_name: readarr
+    image: lscr.io/linuxserver/readarr:develop
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - media
+      - traefik
+
+    expose:
+      - 8787
+
+    environment:
+      TZ: $TZ
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.readarr.rule: Host(`readarr.$DOMAIN`)
+      traefik.http.routers.readarr.entrypoints: websecure
+      traefik.http.routers.readarr.tls.certresolver: le
+
+    tmpfs:
+      - /run:exec,uid=$PUID,gid=$PGID
+
+    volumes:
+      - ./state:/config:rw
+      - $DATA_DIR/media/books:/data/media/books:rw
+      - $DATA_DIR/torrents:/data/torrents:rw
+
+    restart: unless-stopped

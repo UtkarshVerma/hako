@@ -1,0 +1,43 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  calibre-web:
+    container_name: calibre-web
+    image: lscr.io/linuxserver/calibre-web:latest
+
+    # NOTE: Non-root user and read-only not supported yet.
+    # user: $PUID:$PGID
+    # read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+
+    networks:
+      - media
+      - traefik
+
+    expose:
+      - 8083
+
+    environment:
+      PUID: $PUID
+      PGID: $PGID
+      TZ: $TZ
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.calibre.rule: Host(`calibre.$DOMAIN`)
+      traefik.http.routers.calibre.entrypoints: websecure
+      traefik.http.routers.calibre.tls.certresolver: le
+
+    volumes:
+      - ./state:/config:rw
+      - $DATA_DIR/media/books:/books:rw
+
+    restart: unless-stopped
