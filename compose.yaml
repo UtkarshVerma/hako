@@ -9,5 +9,6 @@ include:
   - ./services/recyclarr/compose.yaml
   - ./services/soju/compose.yaml
   - ./services/sonarr/compose.yaml
+  - ./services/syncthing/compose.yaml
   - ./services/traefik/compose.yaml
   - ./services/uptime-kuma/compose.yaml

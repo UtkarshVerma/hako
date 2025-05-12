@@ -1,0 +1,45 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  syncthing:
+    container_name: syncthing
+    image: docker.io/syncthing/syncthing:v2
+    hostname: syncthing
+    healthcheck:
+      test: curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - traefik
+
+    expose:
+      - 8384
+
+    ports:
+      - 22000:22000/tcp  # TCP transfers.
+      - 22000:22000/udp  # QUIC transfers.
+
+    environment:
+      TZ: $TZ
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.syncthing.rule: Host(`syncthing.$DOMAIN`)
+      traefik.http.routers.syncthing.entrypoints: websecure
+      traefik.http.routers.syncthing.tls.certresolver: le
+
+    volumes:
+      - ./state:/var/syncthing:rw
+      - $DATA_DIR:/data:rw
+
+    restart: unless-stopped
