@@ -34,6 +34,7 @@ services:
 
     volumes:
       - ./state:/config:rw
-      - $DATA_DIR:/data:rw
+      - $DATA_DIR/media/tv:/data/media/tv:rw
+      - $DATA_DIR/torrents:/data/torrents:rw
 
     restart: unless-stopped
