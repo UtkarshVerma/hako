@@ -38,6 +38,9 @@ services:
       traefik.http.routers.syncthing.entrypoints: websecure
       traefik.http.routers.syncthing.tls.certresolver: le
 
+    tmpfs:
+      - /tmp:noexec
+
     volumes:
       - ./state:/var/syncthing:rw
       - $DATA_DIR:/data:rw
