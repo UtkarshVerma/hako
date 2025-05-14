@@ -1,0 +1,38 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  microbin:
+    container_name: microbin
+    image: docker.io/danielszabo99/microbin:latest
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - traefik
+
+    expose:
+      - 8080
+
+    environment:
+      MICROBIN_BASIC_AUTH_USERNAME: $MICROBIN_USER
+      MICROBIN_BASIC_AUTH_PASSWORD: $MICROBIN_PASSWORD
+
+    labels:
+      traefik.enable: true
+      traefik.http.routers.microbin.rule: Host(`microbin.$DOMAIN`)
+      traefik.http.routers.microbin.entrypoints: websecure
+      traefik.http.routers.microbin.tls.certresolver: le
+
+    tmpfs:
+      - /tmp:noexec
+
+    volumes:
+      - ./state:/app/microbin_data:rw
+
+    restart: unless-stopped

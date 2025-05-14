@@ -2,6 +2,7 @@ include:
   - ./services/actual/compose.yaml
   - ./services/ddclient/compose.yaml
   - ./services/jellyfin/compose.yaml
+  - ./services/microbin/compose.yaml
   - ./services/miniflux/compose.yaml
   - ./services/opodsync/compose.yaml
   - ./services/prowlarr/compose.yaml
