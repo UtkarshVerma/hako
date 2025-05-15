@@ -1,0 +1,40 @@
+include:
+  - ../wireguard/compose.yaml
+
+services:
+  slskd:
+    container_name: slskd
+    image: docker.io/slskd/slskd:latest
+    depends_on:
+      wireguard:
+        condition: service_healthy
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    network_mode: service:wireguard
+
+    environment:
+      SLSKD_USERNAME: $SLSKD_USER
+      SLSKD_PASSWORD: $SLSKD_PASSWORD
+      SLSKD_SLSK_USERNAME: $SLSK_USERNAME
+      SLSKD_SLSK_PASSWORD: $SLSK_PASSWORD
+      SLSKD_REMOTE_CONFIGURATION: true
+      SLSKD_SHARED_DIR: /music;/books
+
+    # NOTE: traefik configuration is done in wireguard.
+
+    tmpfs:
+      - /tmp:noexec
+      - /.net:exec
+
+    volumes:
+      - ./state:/app:rw
+      - $DATA_DIR/media/music:/music:rw
+      - $DATA_DIR/media/books:/books:rw
+
+    restart: unless-stopped

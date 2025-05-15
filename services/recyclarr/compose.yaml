@@ -1,3 +1,6 @@
+include:
+  - ../compose.common.yaml
+
 services:
   recyclarr:
     container_name: recyclarr

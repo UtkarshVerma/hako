@@ -1,5 +1,5 @@
 include:
-  - ../traefik/compose.yaml
+  - ../wireguard/compose.yaml
 
 services:
   qbittorent:
@@ -23,68 +23,13 @@ services:
       QBT_LEGAL_NOTICE: confirm
       QBT_DOWNLOADS_PATH: /data/torrents
 
+    # NOTE: traefik configuration is done in wireguard.
+
     tmpfs:
       - /tmp:noexec
 
     volumes:
-      - ./state/qbittorrent:/config/qBittorrent:rw
+      - ./state:/config/qBittorrent:rw
       - $DATA_DIR/torrents:/data/torrents:rw
 
     restart: unless-stopped
-
-  wireguard:
-    container_name: wireguard
-    image: lscr.io/linuxserver/wireguard:latest
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - "[ \"$(nslookup $DOMAIN | awk -F': ' 'NR==6 { print $$2 }')\" != \"$(curl --silent https://ifconfig.me)\" ]"
-      interval: 5s
-      timeout: 5s
-      retries: 3
-
-    # NOTE:
-    # Root access is required for creating networking interfaces and modifying
-    # routing rules. Read-only is not supported since client mode updates
-    # resolvconf, etc.
-    security_opt:
-      - no-new-privileges
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-      - CHOWN
-
-    environment:
-      PUID: $PUID
-      PGID: $PGID
-      TZ: $TZ
-
-    networks:
-      - media
-      - traefik
-
-    expose:
-      - &port 8080
-
-    labels:
-      traefik.enable: true
-      traefik.http.routers.qbittorrent.service: qbittorrent
-      traefik.http.routers.qbittorrent.rule: Host(`qbittorrent.$DOMAIN`)
-      traefik.http.routers.qbittorrent.entrypoints: websecure
-      traefik.http.routers.qbittorrent.tls.certresolver: le
-      traefik.http.services.qbittorrent.loadbalancer.server.port: *port
-
-    volumes:
-      - ./state/wireguard:/config:rw
-
-    sysctls:
-      - net.ipv4.conf.all.src_valid_mark=1
-
-    restart: unless-stopped
-
-networks:
-  media:
-    name: media
-    driver: bridge

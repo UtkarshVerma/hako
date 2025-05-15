@@ -10,6 +10,7 @@ include:
   - ./services/qbittorrent/compose.yaml
   - ./services/readarr/compose.yaml
   - ./services/recyclarr/compose.yaml
+  - ./services/slskd/compose.yaml
   - ./services/soju/compose.yaml
   - ./services/sonarr/compose.yaml
   - ./services/syncthing/compose.yaml
