@@ -1,0 +1,35 @@
+include:
+  - ../traefik/compose.yaml
+
+services:
+  audiobookshelf:
+    container_name: audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf:latest
+
+    user: $PUID:$PGID
+    read_only: true
+    security_opt:
+      - no-new-privileges
+    cap_drop:
+      - ALL
+
+    networks:
+      - traefik
+
+    expose:
+      - 80
+
+    labels:
+      traefik.enable: true
+      traefik.tcp.routers.audiobookshelf.rule: HostSNI(`audiobookshelf.$DOMAIN`)
+      traefik.tcp.routers.audiobookshelf.entrypoints: websecure
+      traefik.tcp.routers.audiobookshelf.tls.certresolver: le
+
+    tmpfs:
+      - /metadata:noexec
+
+    volumes:
+      - ./state:/config:rw
+      - $DATA_DIR/media/audiobooks:/audiobooks:rw
+
+    restart: unless-stopped

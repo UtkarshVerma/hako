@@ -1,5 +1,6 @@
 include:
   - ./services/actual/compose.yaml
+  - ./services/audiobookshelf/compose.yaml
   - ./services/ddclient/compose.yaml
   - ./services/jellyfin/compose.yaml
   - ./services/microbin/compose.yaml
